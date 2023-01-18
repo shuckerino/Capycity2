@@ -107,27 +107,41 @@ void Capycity::setBuilding(Building** obj_blueprint) {
 }
 // Bauflaeche freigeben
 void Capycity::deleteArea(Building** obj_blueprint) {
-    int delete_x1, delete_x2, delete_y1, delete_y2;
+    int delete_x1, delete_x2, delete_y1, delete_y2, delete_length, delete_width;
     bool done = false;
     while (!done) {
         try {
-            cout << "Welchen x- Bereich loeschen (x1 x2)?";
-            cin >> delete_x1 >> delete_x2;
-            if ((delete_x1 < 0 || (delete_x1 >= area_length - 1)) || (delete_x2 < 0) || (delete_x2 > area_length - 1))
-                throw "Ungueltiger x-Bereich!";
+            cout << "An welchen Koordinaten (x, y) soll ein Bereich geloescht werden?";
+            cin >> delete_x1 >> delete_y1;
+            if ((delete_x1 < 0 || (delete_x1 >= area_length - 1)) || (delete_y1 < 0) || (delete_y1 > area_width - 1))
+                throw "Ungueltiger Koordinatenbereich!";
 
-            cout << "Welchen y-Bereich loeschen (y1 y2)?";
-            cin >> delete_y1 >> delete_y2;
-            if ((delete_y1 < 0 || (delete_y1 >= area_width - 1)) || (delete_y2 < 0) || (delete_y2 > area_width - 1))
-                throw "Ungueltiger y-Bereich!";
-
+            cout << "Welche Groesse soll der Bereich haben (Laenge, Breite)?";
+            cin >> delete_length >> delete_width;
+            if ((delete_length < 0 || (delete_length >= area_length - 1)) || (delete_width < 0) || (delete_width > area_width - 1))
+                throw "Ungueltiger Koordinatenbereich!";
+            //Userabfrage war erfolgreich
+            done = true;
+            //Berechnung der restlichen Koordinaten x2 und y2
+            delete_x2 = delete_x1 + delete_length - 1;
+            delete_y2 = delete_y1 + delete_width - 1;
+            //Löschen jedes angegebenen Feldes
+            int count_deletedBuildings = 0;
+            vector<Building>& ref = buildingList;
             for (int i = delete_y1; i <= delete_y2; i++) {
                 for (int j = delete_x1; j <= delete_x2; j++) {
-                    obj_blueprint[i][j].deleteBuilding();
-                    reduceBuildingList(delete_x1, delete_x2, delete_y1, delete_y2);
+                    if (obj_blueprint[i][j].getLabel() != "Leer") {
+                        count_deletedBuildings += 1;
+                        for (auto b : buildingList) {
+                            auto& b_ref = b;
+                            b.removeRessources(ref, b_ref);
+                        }
+                        obj_blueprint[i][j].deleteBuilding();
+                        
+                    }
                 }
-            }
-            done = true;
+            }updateBuildingList(obj_blueprint, buildingList);
+            
         }
         catch (const char* txtException) {
             cout << "\nError: " << txtException << endl;
@@ -192,15 +206,23 @@ void Capycity::reduceBuildingList(int x1, int x2, int y1, int y2) {
         // Fall 2: Nur Teile von Gebaeuden werden gelöscht
         //if(x1 <= i.flaeche.x1 && (x2 <= i.flaeche.x2 && x2 >= i.flaeche.x1) && y1 <= i.flaeche.y1 && (y2 <= i.flaeche.y2 && y2 >= i.flaeche.y1)
         //    i.flaeche.x1 -^x2 und i.flaeche.y1 - y2
-        if()
-        else {
-            i.flaeche.setflaeche(i.flaeche.getlength() - (x2-x1+1), )
-        }
+        //if()
+        //else {
+        //    i.flaeche.setflaeche(i.flaeche.getlength() - (x2-x1+1), )
+        //}
 
     }
-    
-   
 
+}
+vector<Building> Capycity::updateBuildingList(Building** blueprint, vector<Building>& buildingList) {
+    buildingList.clear();
+       
+    for(int i = 0; i < area_length-1; i++)
+        for (int j = 0; j < area_width-1; j++) {
+            if((blueprint[i][j].getLabel() != blueprint[i+1][j].getLabel()) && (blueprint[i][j].getLabel() != blueprint[i][j+1].getLabel()) && blueprint[i][j].getLabel() != "Leer")
+                buildingList.push_back(blueprint[i][j]);
+        }
+    return buildingList;
 }
 
 
@@ -236,6 +258,7 @@ string Metall::toString() {
 string Kunststoff::toString() {
     return "Kunststoff";
 }
+
 
 
 //-------------------------------------Buildings---------------------------------------------------------
@@ -313,15 +336,18 @@ Solarpanele::Solarpanele(int x1, int x2, int y1, int y2) {
     baseprice = 1000;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    req_wood = 1;
+    req_met = 2;
+    req_pla = 3;
+    for (int i = 0; i < req_wood * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Holz());
         priceOfRessources += Holz().price;
     }
-    for (int i = 0; i < 2 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    for (int i = 0; i < req_met * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Metall());
         priceOfRessources += Metall().price;
     }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    for (int i = 0; i < req_pla * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Kunststoff());
         priceOfRessources += Kunststoff().price;
     }
@@ -331,15 +357,18 @@ Windkraftwerk::Windkraftwerk(int x1, int x2, int y1, int y2) {
     baseprice = 1500;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
-    for (int i = 0; i < 3 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    req_wood = 3;
+    req_met = 2;
+    req_pla = 1;
+    for (int i = 0; i < req_wood * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Holz());
         priceOfRessources += Holz().price;
     }
-    for (int i = 0; i < 2 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    for (int i = 0; i < req_met * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Metall());
         priceOfRessources += Metall().price;
     }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    for (int i = 0; i < req_pla * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Kunststoff());
         priceOfRessources += Kunststoff().price;
     }
@@ -349,15 +378,18 @@ Wasserkraftwerk::Wasserkraftwerk(int x1, int x2, int y1, int y2) {
     baseprice = 2000;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
-    for (int i = 0; i < 2 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    req_wood = 2;
+    req_met = 1;
+    req_pla = 2;
+    for (int i = 0; i < req_wood * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Holz());
         priceOfRessources += Holz().price;
     }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    for (int i = 0; i < req_met * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Metall());
         priceOfRessources += Metall().price;
     }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
+    for (int i = 0; i < req_pla * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
         ressources.push_back(Kunststoff());
         priceOfRessources += Kunststoff().price;
     }
@@ -365,12 +397,7 @@ Wasserkraftwerk::Wasserkraftwerk(int x1, int x2, int y1, int y2) {
 
 // Methoden
 
-// Material hinzufügen
-void Building::addMaterial(int quantity, Material type) {
-    for (int i = 0; i < quantity; i++) {
-        ressources.push_back(type);
-    }
-}
+
 // Label ausgeben
 string Building::getLabel() {
     return label;
@@ -397,6 +424,16 @@ void Building::deleteBuilding() {
     label = "Leer";
     ressources.clear();
     baseprice = 0;
+}
+void Building::removeRessources(vector<Building>& buildingList, Building& b) {
+        // Holz loeschen
+        b.ressources.erase(ressources.begin(), (ressources.begin() + req_wood - 1));
+        //Metall loeschen
+        b.ressources.erase(ressources.begin() + (ressources.size() / 2), ((ressources.begin() + (ressources.size() / 2)) + req_met));
+        //Plastik loeschen
+        b.ressources.erase(ressources.end() - req_pla - 1, ressources.end());
+    
+
 }
 
 //--------------------------------------------------------Flaeche----------------------------------------

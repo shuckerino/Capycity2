@@ -47,20 +47,23 @@ public:
 
 };
 
+
 class Building {
 public:
 	string label;
 	Flaeche flaeche;
+	int req_wood, req_met, req_pla;
 	int baseprice;
 	int priceOfRessources;
 	vector<Material> ressources;
 	Building(int x1, int x2, int y1, int y2);
 	Building();
-	void addMaterial(int quantity, Material type);
 	string getLabel();
 	string toString();
 	string resToString();
 	void deleteBuilding();
+	void removeRessources(vector<Building>& buildingList, Building& b);
+	
 	
 };
 
@@ -102,4 +105,5 @@ public:
 	void setAreaLength(int length);
 	void setAreaWidth(int width);
 	void reduceBuildingList(int x1, int x2, int y1, int y2);
+	vector<Building> updateBuildingList(Building** bluepr, vector<Building>& list);
 };
