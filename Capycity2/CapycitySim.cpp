@@ -203,13 +203,6 @@ void Capycity::reduceBuildingList(int x1, int x2, int y1, int y2) {
             buildingList.erase(buildingList.begin() + index);
         index++;
 
-        // Fall 2: Nur Teile von Gebaeuden werden gelöscht
-        //if(x1 <= i.flaeche.x1 && (x2 <= i.flaeche.x2 && x2 >= i.flaeche.x1) && y1 <= i.flaeche.y1 && (y2 <= i.flaeche.y2 && y2 >= i.flaeche.y1)
-        //    i.flaeche.x1 -^x2 und i.flaeche.y1 - y2
-        //if()
-        //else {
-        //    i.flaeche.setflaeche(i.flaeche.getlength() - (x2-x1+1), )
-        //}
 
     }
 
