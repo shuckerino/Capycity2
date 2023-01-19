@@ -127,21 +127,20 @@ void Capycity::deleteArea(Building** obj_blueprint) {
             delete_y2 = delete_y1 + delete_width - 1;
             //Löschen jedes angegebenen Feldes
             int count_deletedBuildings = 0;
-            vector<Building>& ref = buildingList;
             for (int i = delete_y1; i <= delete_y2; i++) {
                 for (int j = delete_x1; j <= delete_x2; j++) {
                     if (obj_blueprint[i][j].getLabel() != "Leer") {
                         count_deletedBuildings += 1;
                         for (auto b : buildingList) {
                             auto& b_ref = b;
-                            b.removeRessources(ref, b_ref);
+                            b.removeRessources();
                         }
                         obj_blueprint[i][j].deleteBuilding();
-                        
+
                     }
                 }
             }updateBuildingList(obj_blueprint, buildingList);
-            
+
         }
         catch (const char* txtException) {
             cout << "\nError: " << txtException << endl;
@@ -164,7 +163,8 @@ void Capycity::print_blueprint(Building** obj_blueprint) {
     // Ausgabe der Gebaeudeliste
     cout << "\nListe der gebauten Gebaeude: " << endl;
     for (int i = 0; i < buildingList.size(); i++) {
-        cout << buildingList[i].toString() << endl;
+        buildingList[i].toString();
+
     }
     cout << endl;
 
@@ -251,6 +251,11 @@ string Metall::toString() {
 string Kunststoff::toString() {
     return "Kunststoff";
 }
+bool Material::operator< (const Material mat) const {
+    if (price < mat.price)
+        return true;
+    return false;
+}
 
 
 
@@ -266,56 +271,23 @@ Building::Building() {
 Solarpanele::Solarpanele() {
     label = "Solar";
     baseprice = 1000;
-    this->flaeche.setFlaeche(0, 0, 0, 0);
     priceOfRessources = 0;
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Holz());
-        priceOfRessources += Holz().price;
-    }
-    for (int i = 0; i < 2 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Metall());
-        priceOfRessources += Metall().price;
-    }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Kunststoff());
-        priceOfRessources += Kunststoff().price;
-    }
+    this->flaeche.setFlaeche(0, 0, 0, 0);
+
 }
 Windkraftwerk::Windkraftwerk() {
     label = "WiKra";
     baseprice = 1500;
     this->flaeche.setFlaeche(0, 0, 0, 0);
     priceOfRessources = 0;
-    for (int i = 0; i < 3 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Holz());
-        priceOfRessources += Holz().price;
-    }
-    for (int i = 0; i < 2 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Metall());
-        priceOfRessources += Metall().price;
-    }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Kunststoff());
-        priceOfRessources += Kunststoff().price;
-    }
+
 }
 Wasserkraftwerk::Wasserkraftwerk() {
     label = "WaKra";
     baseprice = 2000;
     this->flaeche.setFlaeche(0, 0, 0, 0);
     priceOfRessources = 0;
-    for (int i = 0; i < 2 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Holz());
-        priceOfRessources += Holz().price;
-    }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Metall());
-        priceOfRessources += Metall().price;
-    }
-    for (int i = 0; i < 1 * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Kunststoff());
-        priceOfRessources += Kunststoff().price;
-    }
+
 }
 
 // andere Konstruktoren
@@ -329,63 +301,44 @@ Solarpanele::Solarpanele(int x1, int x2, int y1, int y2) {
     baseprice = 1000;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
-    req_wood = 1;
-    req_met = 2;
-    req_pla = 3;
-    for (int i = 0; i < req_wood * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Holz());
-        priceOfRessources += Holz().price;
-    }
-    for (int i = 0; i < req_met * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Metall());
-        priceOfRessources += Metall().price;
-    }
-    for (int i = 0; i < req_pla * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Kunststoff());
-        priceOfRessources += Kunststoff().price;
-    }
+    req_wood = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_met = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_pla = 3 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    material.insert(make_pair(Holz(), req_wood));
+    material.insert(make_pair(Metall(), req_met));
+    material.insert(make_pair(Kunststoff(), req_pla));
+    for (auto i = material.begin(); i != material.end(); i++)
+        priceOfRessources += i->first.price * i->second;
+
+
 }
 Windkraftwerk::Windkraftwerk(int x1, int x2, int y1, int y2) {
     label = "WiKra";
     baseprice = 1500;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
-    req_wood = 3;
-    req_met = 2;
-    req_pla = 1;
-    for (int i = 0; i < req_wood * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Holz());
-        priceOfRessources += Holz().price;
-    }
-    for (int i = 0; i < req_met * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Metall());
-        priceOfRessources += Metall().price;
-    }
-    for (int i = 0; i < req_pla * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Kunststoff());
-        priceOfRessources += Kunststoff().price;
-    }
+    req_wood = 3 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_met = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_pla = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    material.insert(make_pair(Holz(), req_wood));
+    material.insert(make_pair(Metall(), req_met));
+    material.insert(make_pair(Kunststoff(), req_pla));
+    for (auto i = material.begin(); i != material.end(); i++)
+        priceOfRessources += i->first.price * i->second;
 }
 Wasserkraftwerk::Wasserkraftwerk(int x1, int x2, int y1, int y2) {
     label = "WaKra";
     baseprice = 2000;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
-    req_wood = 2;
-    req_met = 1;
-    req_pla = 2;
-    for (int i = 0; i < req_wood * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Holz());
-        priceOfRessources += Holz().price;
-    }
-    for (int i = 0; i < req_met * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Metall());
-        priceOfRessources += Metall().price;
-    }
-    for (int i = 0; i < req_pla * (this->flaeche.getLength() * this->flaeche.getWidth()); i++) {
-        ressources.push_back(Kunststoff());
-        priceOfRessources += Kunststoff().price;
-    }
+    req_wood = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_met = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_pla = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    material.insert(make_pair(Holz(), req_wood));
+    material.insert(make_pair(Metall(), req_met));
+    material.insert(make_pair(Kunststoff(), req_pla));
+    for (auto i = material.begin(); i != material.end(); i++)
+        priceOfRessources += i->first.price * i->second;
 }
 
 // Methoden
@@ -396,35 +349,39 @@ string Building::getLabel() {
     return label;
 }
 
-string Building::resToString() {
-    ostringstream list;
-    list << "[";
-    for (auto i : ressources)
-        list << i.toString() << ", ";
-    list << "]";
-    return list.str();
+void Building::resToString() {
+    cout << " Ressourcen: ";
+    for (auto i = material.begin(); i != material.end(); i++)
+        cout << i->first.name << " - " << i->second << ", ";
+    cout << "\n" << endl;
 }
 // toString
-string Building::toString() {
+void Building::toString() {
     ostringstream strout;
     string listRes = "";
     //string str(ressources.begin(), ressources.end());
-    strout << " Gebaeudetyp: " << this->label << "\n Gebaeudepreis = " << (this->baseprice + this->priceOfRessources) << "\n Ressourcenliste: " << this->resToString() << "\n" << endl;
-    return strout.str();
+    strout << " Gebaeudetyp: " << this->label << "\n Gebaeudepreis = " << (this->baseprice + this->priceOfRessources) << endl;
+    cout << strout.str();
+    this->resToString();
+
 }
 // Gebaeude abreissen
 void Building::deleteBuilding() {
     label = "Leer";
-    ressources.clear();
+    material.clear();
     baseprice = 0;
 }
-void Building::removeRessources(vector<Building>& buildingList, Building& b) {
-        // Holz loeschen
-        b.ressources.erase(ressources.begin(), (ressources.begin() + req_wood - 1));
-        //Metall loeschen
-        b.ressources.erase(ressources.begin() + (ressources.size() / 2), ((ressources.begin() + (ressources.size() / 2)) + req_met));
-        //Plastik loeschen
-        b.ressources.erase(ressources.end() - req_pla - 1, ressources.end());
+void Building::removeRessources() {
+    this->material.clear();
+    req_wood = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_met = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    req_pla = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    material.insert(make_pair(Holz(), req_wood));
+    material.insert(make_pair(Metall(), req_met));
+    material.insert(make_pair(Kunststoff(), req_pla));
+    for (auto i = material.begin(); i != material.end(); i++)
+        priceOfRessources += i->first.price * i->second;
+
     
 
 }

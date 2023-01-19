@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <map>
 using namespace std;
 
 // Materialverwaltung
@@ -12,6 +13,7 @@ public:
 	string name;
 	Material();
 	string toString();
+	bool operator< (const Material mat) const;
 };
 
 class Holz : public Material {
@@ -52,17 +54,17 @@ class Building {
 public:
 	string label;
 	Flaeche flaeche;
+	map<Material, int> material;
 	int req_wood, req_met, req_pla;
 	int baseprice;
 	int priceOfRessources;
-	vector<Material> ressources;
 	Building(int x1, int x2, int y1, int y2);
 	Building();
 	string getLabel();
-	string toString();
-	string resToString();
+	void toString();
+	void resToString();
 	void deleteBuilding();
-	void removeRessources(vector<Building>& buildingList, Building& b);
+	void removeRessources();
 	
 	
 };
