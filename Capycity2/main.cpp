@@ -132,7 +132,7 @@ void endProgram() {
 int main() {
 
     bool done = false;
-    cout << "Erstelle einen Plan: \n\n";
+    cout << "Erstelle einen neuen Bauplan: \n\n";
 
     // Benutzereingabe der Länge und Breite des Baubereichs
     while (!done) {
