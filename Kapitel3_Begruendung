@@ -1,0 +1,8 @@
+# Capycity2
+
+
+/*  Begründung für die Nutzung von Carlas Idee
+Ich habe die Verwaltung der benötigten Materialien innerhalb der Gebaeude gemacht, da eine Kapselung wenig sinnvoll ist.
+So ist es übersichtlich, dass jedes Gebaeude direkt im Konstruktor seine Materialienliste erzeugt. Bei der Kapselung wird es sonst unübersichtlich
+
+*/
