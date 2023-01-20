@@ -6,19 +6,158 @@ using namespace std;
 //-------------------------------------CapycitySim---------------------------------------------------------
 
 CapycitySim::CapycitySim() {
-    vector<Building> buildingList = {};
+    vector<Blueprint> blueprint_list = {};
 }
 
 CapycitySim::CapycitySim(int area_l, int area_w) {
-    vector<Building> buildingList = {};
+    vector<Blueprint> blueprint_list = {};
 }
 // Programm beenden
 void CapycitySim::endProgram() {
     cout << "Programm wird beendet...";
     exit(0);
 }
-void CapycitySim::menu() {
 
+
+void CapycitySim::save(Blueprint& blueprint, Building** obj_blueprint) {
+    // überprüfen auf Gleichheit von Plänen
+    for (auto i : blueprint_list) {
+        if (blueprint(i)) { // Aufrufen des Funktors 
+            blueprint_list.push_back(blueprint);
+            obj_blueprint_list.push_back(obj_blueprint);
+        }
+
+    }
+    // wenn noch keine Baupläne gespeichert, dann auf jeden Fall speichern
+    if (blueprint_list.empty()) {
+        blueprint_list.push_back(blueprint);
+        obj_blueprint_list.push_back(obj_blueprint);
+    }
+
+
+        
+}
+
+Building** CapycitySim::create_object_blueprint(Blueprint& blueprint) {
+    bool done = false;
+    int area_length, area_width;
+    cout << "Erstelle einen neuen Bauplan: \n" << endl;
+
+    // Benutzereingabe der Länge und Breite des Baubereichs
+    while (!done) {
+        try {
+            cout << "Laenge des Baubereichs: ";
+            cin >> area_length;
+            if ((area_length <= 0) || !cin.good())
+                throw "Keine gueltige Laenge!";
+            cout << "Breite des Baubereichs: ";
+            cin >> area_width;
+            if ((area_width <= 0) || !cin.good())
+                throw "Keine gueltige Breite";
+            done = true;
+            // Setzen der Parameter
+            blueprint.setAreaLength(area_length);
+            blueprint.setAreaWidth(area_width);
+
+        }
+        catch (const char* txtMsg) {
+            cout << "\nError: " << txtMsg << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        }
+    }
+
+    // 2D Gebaeudearray
+    Building** obj_blueprint = new Building * [blueprint.getAreaWidth()];
+    for (int i = 0; i < blueprint.getAreaWidth(); i++) {
+        obj_blueprint[i] = new Building[blueprint.getAreaLength()];
+    }
+
+    // Initialisierung des 2D- Arrays mit freien Plätzen (0)
+    for (int i = 0; i < blueprint.getAreaWidth(); i++) {
+        for (int j = 0; j < blueprint.getAreaLength(); j++) {
+            obj_blueprint[i][j].label;
+        }
+
+    }
+    return obj_blueprint;
+}
+
+Blueprint CapycitySim::create_blueprint() {
+    Blueprint blueprint = Blueprint();
+    return blueprint;
+}
+
+void CapycitySim::menu(CapycitySim& sim) {
+
+    //Ersten Blueprint automatisch erstellen
+    Blueprint blueprint = create_blueprint();
+    Building** obj_blueprint = create_object_blueprint(blueprint);
+
+
+    while (true) {
+
+        // Aktionsmenue
+        int input;
+        bool wrong_input = true;
+        bool just_printed = false;
+        while (wrong_input) {
+
+            cout << "Menue: \n Gebaeude setzen (1) \n Bereich loeschen (2) \n Bauplan ausgeben (3) \n Neuen Bauplan erstellen (4) \n Alle Bauplaene ausgeben (5) \n Programm beenden (6)\n";
+            cin >> input;
+
+            switch (input) {
+            case 1: // Gebaeude setzen
+                blueprint.setBuilding(obj_blueprint);
+                wrong_input = false;
+                break;
+            case 2: // Bereich loeschen
+                blueprint.deleteArea(obj_blueprint);
+                wrong_input = false;
+                break;
+            case 3: // Bauplan ausgeben
+                blueprint.print_blueprint(obj_blueprint);
+                wrong_input = false;
+                break;
+            case 4: //Neuen Bauplan erstellen
+                if(!just_printed)
+                    sim.save(blueprint, obj_blueprint);
+                blueprint = create_blueprint();
+                obj_blueprint = create_object_blueprint(blueprint);
+                wrong_input = false;
+                just_printed = false;
+                break;
+            case 5: //Alle Baupläne ausgeben
+                //sim.save(blueprint, obj_blueprint);
+                sim.print_all_blueprints();
+                wrong_input = false;
+                just_printed = true;
+                break;
+            case 6: // Programm beenden
+                sim.endProgram();
+                wrong_input = false;
+                break;
+            default:
+                cout << "Keine gueltige Eingabe! Versuche es erneut!\n";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+        }
+    }
+}
+
+void CapycitySim::print_all_blueprints() {
+    
+    //auto lambda = [] () -> 
+    int index = 0;
+    for (auto i : this->blueprint_list) {
+        auto it_obj = this->obj_blueprint_list[index];
+        i.print_blueprint(it_obj);
+        index++;
+
+    }
+        
 }
 
 
@@ -36,6 +175,7 @@ Blueprint::Blueprint(int area_l, int area_w) {
     area_length = area_l;
     area_width = area_w;
     vector<Building> buildingList = {};
+    
 }
 // Pruefung ob Teile eines zu bauenden Gebäudes mit anderen Gebäuden kollidiert oder außerhalb des Baubereichs liegt
 bool Blueprint::collision(Building** obj_blueprint, int pos_x, int pos_y, int building_width, int building_length) {
@@ -150,6 +290,8 @@ void Blueprint::deleteArea(Building** obj_blueprint) {
             //Berechnung der restlichen Koordinaten x2 und y2
             delete_x2 = delete_x1 + delete_length - 1;
             delete_y2 = delete_y1 + delete_width - 1;
+            //Wenn Gebaeude vollständig gelöscht, dann aus building_list entfernen
+            reduceBuildingList(delete_x1, delete_x2, delete_y1, delete_y2);
             //Löschen jedes angegebenen Feldes im Building Array
             int count_deletedWiKra = 0;
             int count_deletedWaKra = 0;
@@ -199,14 +341,14 @@ void Blueprint::print_blueprint(Building** obj_blueprint) {
         buildingList[i].toString();
 
     }
-    cout << endl;
 
     // Ausgabe des Gesamtpreises aller Gebaeude
     int result = 0;
     for (int i = 0; i < buildingList.size(); i++) {
         result += (buildingList[i].baseprice + buildingList[i].priceOfRessources);
     }
-    cout << "\nGesamtpreis aller Gebaeude: " << result << endl;
+    cout << "\n Gesamtpreis aller Gebaeude: " << result << "\n" << endl;
+   
 }
 // Programm beenden
 
@@ -221,18 +363,18 @@ int Blueprint::getAreaWidth() {
 float Blueprint::getKennzahl() {
     return this->kennzahl;
 }
-
+// Setter
 void Blueprint::setKennzahl() {
     int sum_leistung = 0, sum_price = 0;
     for (auto i : this->buildingList) {
         sum_price += i.getFullPrice();
         sum_leistung += i.getLeistung();
     }
-    if(!this->buildingList.empty())
+    if (this->buildingList.empty())
+        this->kennzahl = 0;
+    else
         this->kennzahl = (sum_leistung / (sum_price * (static_cast<float> (this->area_length * this->area_width))));
 }
-
-// Setter
 void Blueprint::setAreaLength(int length) {
     area_length = length;
 }
@@ -243,8 +385,10 @@ void Blueprint::reduceBuildingList(int x1, int x2, int y1, int y2) {
     // Fall 1: Zu löschender Bereich umfasst gesamtes Gebaeude
     int index = 0;
     for (auto i : buildingList) {
-        if (x1 <= i.flaeche.x1 && x2 >= i.flaeche.x2 && y1 <= i.flaeche.y1 && y2 >= i.flaeche.y2)
+        if (x1 <= i.flaeche.x1 && x2 >= i.flaeche.x2 && y1 <= i.flaeche.y1 && y2 >= i.flaeche.y2) {
             buildingList.erase(buildingList.begin() + index);
+        }
+            
         index++;
 
 
@@ -252,9 +396,11 @@ void Blueprint::reduceBuildingList(int x1, int x2, int y1, int y2) {
 
 }
 
-//Funktor
-bool Blueprint::operator () (Blueprint& b1, Blueprint& b2) const {
-    return b1.getKennzahl() == b2.getKennzahl();
+//Funktor, Rückgabewert true wenn Bauplan gespeichert werden soll
+bool Blueprint::operator () (Blueprint& b1)  {
+    if ((getKennzahl() == b1.getKennzahl()) && (area_length == b1.area_length) && (area_width == b1.area_width))
+        return false;
+    return true;
 }
 
 

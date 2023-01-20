@@ -113,19 +113,25 @@ public:
 	void setAreaLength(int length);
 	void setAreaWidth(int width);
 	//Funktor
-	bool operator () (Blueprint& b1, Blueprint& b2) const;
+	bool operator () (Blueprint& b1);
 	void reduceBuildingList(int x1, int x2, int y1, int y2);
-	vector<Building> updateBuildingList(Building** bluepr, vector<Building>& list);
 };
 
 //----------------------------------------------------------- CapycitySim-----------------------------------------------------------------------
 class CapycitySim {
 public:
-	vector<Blueprint> blueprints;
+	vector<Blueprint> blueprint_list;
+	vector<Building**> obj_blueprint_list;
 	// Konstruktor:
 	CapycitySim();
 	CapycitySim(int area_l, int area_w);
+	void menu(CapycitySim& sim);
 	void endProgram();
-	void menu();
+	Building** create_object_blueprint(Blueprint& bluepr);
+	Blueprint create_blueprint();
+	bool check_if_unique(Blueprint& bluepr);
+	void save(Blueprint& bluepr, Building** obj_bluepr);
+	void print_all_blueprints();
+
 };
 
