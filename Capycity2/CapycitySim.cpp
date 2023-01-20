@@ -19,81 +19,27 @@ void CapycitySim::endProgram() {
 }
 
 
-void CapycitySim::save(Blueprint& blueprint, Building** obj_blueprint) {
+void CapycitySim::save(Blueprint& blueprint) {
     // überprüfen auf Gleichheit von Plänen
     for (auto i : blueprint_list) {
         if (blueprint(i)) { // Aufrufen des Funktors 
             blueprint_list.push_back(blueprint);
-            obj_blueprint_list.push_back(obj_blueprint);
         }
 
     }
     // wenn noch keine Baupläne gespeichert, dann auf jeden Fall speichern
     if (blueprint_list.empty()) {
         blueprint_list.push_back(blueprint);
-        obj_blueprint_list.push_back(obj_blueprint);
     }
 
 
         
 }
 
-Building** CapycitySim::create_object_blueprint(Blueprint& blueprint) {
-    bool done = false;
-    int area_length, area_width;
-    cout << "Erstelle einen neuen Bauplan: \n" << endl;
-
-    // Benutzereingabe der Länge und Breite des Baubereichs
-    while (!done) {
-        try {
-            cout << "Laenge des Baubereichs: ";
-            cin >> area_length;
-            if ((area_length <= 0) || !cin.good())
-                throw "Keine gueltige Laenge!";
-            cout << "Breite des Baubereichs: ";
-            cin >> area_width;
-            if ((area_width <= 0) || !cin.good())
-                throw "Keine gueltige Breite";
-            done = true;
-            // Setzen der Parameter
-            blueprint.setAreaLength(area_length);
-            blueprint.setAreaWidth(area_width);
-
-        }
-        catch (const char* txtMsg) {
-            cout << "\nError: " << txtMsg << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        }
-    }
-
-    // 2D Gebaeudearray
-    Building** obj_blueprint = new Building * [blueprint.getAreaWidth()];
-    for (int i = 0; i < blueprint.getAreaWidth(); i++) {
-        obj_blueprint[i] = new Building[blueprint.getAreaLength()];
-    }
-
-    // Initialisierung des 2D- Arrays mit freien Plätzen (0)
-    for (int i = 0; i < blueprint.getAreaWidth(); i++) {
-        for (int j = 0; j < blueprint.getAreaLength(); j++) {
-            obj_blueprint[i][j].label;
-        }
-
-    }
-    return obj_blueprint;
-}
-
-Blueprint CapycitySim::create_blueprint() {
-    Blueprint blueprint = Blueprint();
-    return blueprint;
-}
-
 void CapycitySim::menu(CapycitySim& sim) {
 
     //Ersten Blueprint automatisch erstellen
     Blueprint blueprint = create_blueprint();
-    Building** obj_blueprint = create_object_blueprint(blueprint);
 
 
     while (true) {
@@ -101,7 +47,6 @@ void CapycitySim::menu(CapycitySim& sim) {
         // Aktionsmenue
         int input;
         bool wrong_input = true;
-        bool just_printed = false;
         while (wrong_input) {
 
             cout << "Menue: \n Gebaeude setzen (1) \n Bereich loeschen (2) \n Bauplan ausgeben (3) \n Neuen Bauplan erstellen (4) \n Alle Bauplaene ausgeben (5) \n Programm beenden (6)\n";
@@ -109,30 +54,25 @@ void CapycitySim::menu(CapycitySim& sim) {
 
             switch (input) {
             case 1: // Gebaeude setzen
-                blueprint.setBuilding(obj_blueprint);
+                blueprint.setBuilding(blueprint.obj_blueprint);
                 wrong_input = false;
                 break;
             case 2: // Bereich loeschen
-                blueprint.deleteArea(obj_blueprint);
+                blueprint.deleteArea(blueprint.obj_blueprint);
                 wrong_input = false;
                 break;
             case 3: // Bauplan ausgeben
-                blueprint.print_blueprint(obj_blueprint);
+                blueprint.print_blueprint(blueprint.obj_blueprint);
                 wrong_input = false;
                 break;
             case 4: //Neuen Bauplan erstellen
-                if(!just_printed)
-                    sim.save(blueprint, obj_blueprint);
+                sim.save(blueprint);
                 blueprint = create_blueprint();
-                obj_blueprint = create_object_blueprint(blueprint);
                 wrong_input = false;
-                just_printed = false;
                 break;
             case 5: //Alle Baupläne ausgeben
-                //sim.save(blueprint, obj_blueprint);
                 sim.print_all_blueprints();
                 wrong_input = false;
-                just_printed = true;
                 break;
             case 6: // Programm beenden
                 sim.endProgram();
@@ -150,11 +90,8 @@ void CapycitySim::menu(CapycitySim& sim) {
 void CapycitySim::print_all_blueprints() {
     
     //auto lambda = [] () -> 
-    int index = 0;
     for (auto i : this->blueprint_list) {
-        auto it_obj = this->obj_blueprint_list[index];
-        i.print_blueprint(it_obj);
-        index++;
+        i.print_blueprint(i.obj_blueprint);
 
     }
         
@@ -168,6 +105,7 @@ Blueprint::Blueprint() {
     area_length = 0;
     area_width = 0;
     vector<Building> buildingList = {};
+    this->create_object_blueprint();
 }
 
 Blueprint::Blueprint(int area_l, int area_w) {
@@ -175,10 +113,62 @@ Blueprint::Blueprint(int area_l, int area_w) {
     area_length = area_l;
     area_width = area_w;
     vector<Building> buildingList = {};
+    this->create_object_blueprint();
     
 }
+Building** Blueprint::create_object_blueprint() {
+    bool done = false;
+    int area_length, area_width;
+    cout << "Erstelle einen neuen Bauplan: \n" << endl;
+
+    // Benutzereingabe der Länge und Breite des Baubereichs
+    while (!done) {
+        try {
+            cout << "Laenge des Baubereichs: ";
+            cin >> area_length;
+            if ((area_length <= 0) || !cin.good())
+                throw "Keine gueltige Laenge!";
+            cout << "Breite des Baubereichs: ";
+            cin >> area_width;
+            if ((area_width <= 0) || !cin.good())
+                throw "Keine gueltige Breite";
+            done = true;
+            // Setzen der Parameter
+            this->setAreaLength(area_length);
+            this->setAreaWidth(area_width);
+
+        }
+        catch (const char* txtMsg) {
+            cout << "\nError: " << txtMsg << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        }
+    }
+
+    // 2D Gebaeudearray
+    obj_blueprint = new Building * [this->getAreaWidth()];
+    for (int i = 0; i < this->getAreaWidth(); i++) {
+        obj_blueprint[i] = new Building[this->getAreaLength()];
+    }
+
+    // Initialisierung des 2D- Arrays mit freien Plätzen (0)
+    for (int i = 0; i < this->getAreaWidth(); i++) {
+        for (int j = 0; j < this->getAreaLength(); j++) {
+            obj_blueprint[i][j].label;
+        }
+
+    }
+    return obj_blueprint;
+}
+
+Blueprint CapycitySim::create_blueprint() {
+    Blueprint blueprint = Blueprint();
+    return blueprint;
+}
+
 // Pruefung ob Teile eines zu bauenden Gebäudes mit anderen Gebäuden kollidiert oder außerhalb des Baubereichs liegt
-bool Blueprint::collision(Building** obj_blueprint, int pos_x, int pos_y, int building_width, int building_length) {
+bool Blueprint::collision(Building** object_bluepr, int pos_x, int pos_y, int building_width, int building_length) {
 
 
         // Pruefung, ob Building innerhalb der Baufläche
@@ -199,7 +189,7 @@ bool Blueprint::collision(Building** obj_blueprint, int pos_x, int pos_y, int bu
     }
 
 // Gebaeude setzen
-void Blueprint::setBuilding(Building** obj_blueprint) {
+void Blueprint::setBuilding(Building** object_bluepr) {
     // Lokale 
     int building_width, building_length, pos_x, pos_y;
     bool done = false;
@@ -237,7 +227,7 @@ void Blueprint::setBuilding(Building** obj_blueprint) {
 
 
         // Gebaeude einfügen
-        if (!collision(obj_blueprint, pos_x, pos_y, building_width, building_length)) {
+        if (!collision(this->obj_blueprint, pos_x, pos_y, building_width, building_length)) {
             for (int i = pos_y; i < (pos_y + building_width); i++) {
                 for (int j = pos_x; j < (pos_x + building_length); j++) {
                     switch (b_type) {
@@ -271,7 +261,7 @@ void Blueprint::setBuilding(Building** obj_blueprint) {
 
 }
 // Bauflaeche freigeben
-void Blueprint::deleteArea(Building** obj_blueprint) {
+void Blueprint::deleteArea(Building** object_bluepr) {
     int delete_x1, delete_x2, delete_y1, delete_y2, delete_length, delete_width;
     bool done = false;
     while (!done) {
@@ -322,10 +312,10 @@ void Blueprint::deleteArea(Building** obj_blueprint) {
 
 }
 // Ausgabe Bauplan
-void Blueprint::print_blueprint(Building** obj_blueprint) {
+void Blueprint::print_blueprint(Building** object_bluepr) {
     // Ausgabe des Bauplans
-    for (int i = 0; i < area_width; i++) {
-        for (int j = 0; j < area_length; j++) {
+    for (int i = 0; i < this->getAreaWidth(); i++) {
+        for (int j = 0; j < this->getAreaLength(); j++) {
             cout << obj_blueprint[i][j].label << "\t";
         }
         cout << endl;
@@ -398,7 +388,7 @@ void Blueprint::reduceBuildingList(int x1, int x2, int y1, int y2) {
 
 //Funktor, Rückgabewert true wenn Bauplan gespeichert werden soll
 bool Blueprint::operator () (Blueprint& b1)  {
-    if ((getKennzahl() == b1.getKennzahl()) && (area_length == b1.area_length) && (area_width == b1.area_width))
+    if ((b1.getKennzahl() == getKennzahl()) && (b1.getAreaLength() == getAreaLength()) && (b1.getAreaWidth() == getAreaWidth()))
         return false;
     return true;
 }

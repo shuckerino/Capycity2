@@ -97,14 +97,15 @@ public:
 	int area_width, area_length;
 	float kennzahl;
 	vector<Building> buildingList;
+	Building** obj_blueprint;
 	// Konstruktor:
 	Blueprint();
 	Blueprint(int area_l, int area_w);
 	// Funktionen:
-	bool collision(Building** bluepr, int pos_x, int pos_y, int building_width, int building_length);
-	void setBuilding(Building** bluepr);
-	void deleteArea(Building** bluepr);
-	void print_blueprint(Building** bluepr);
+	bool collision(Building** object_bluepr, int pos_x, int pos_y, int building_width, int building_length);
+	void setBuilding(Building** object_bluepr);
+	void deleteArea(Building** object_bluepr);
+	void print_blueprint(Building** object_bluepr);
 	// Getter und Setter:
 	int getAreaLength();
 	int getAreaWidth();
@@ -112,6 +113,7 @@ public:
 	void setKennzahl();
 	void setAreaLength(int length);
 	void setAreaWidth(int width);
+	Building** create_object_blueprint();
 	//Funktor
 	bool operator () (Blueprint& b1);
 	void reduceBuildingList(int x1, int x2, int y1, int y2);
@@ -121,16 +123,13 @@ public:
 class CapycitySim {
 public:
 	vector<Blueprint> blueprint_list;
-	vector<Building**> obj_blueprint_list;
 	// Konstruktor:
 	CapycitySim();
 	CapycitySim(int area_l, int area_w);
 	void menu(CapycitySim& sim);
 	void endProgram();
-	Building** create_object_blueprint(Blueprint& bluepr);
 	Blueprint create_blueprint();
-	bool check_if_unique(Blueprint& bluepr);
-	void save(Blueprint& bluepr, Building** obj_bluepr);
+	void save(Blueprint& bluepr);
 	void print_all_blueprints();
 
 };
