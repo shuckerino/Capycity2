@@ -58,6 +58,7 @@ public:
 	int req_wood, req_met, req_pla;
 	int baseprice;
 	int priceOfRessources;
+	int leistung;
 	Building(int x1, int x2, int y1, int y2);
 	Building();
 	string getLabel();
@@ -65,6 +66,8 @@ public:
 	void resToString();
 	void deleteBuilding();
 	void removeRessources();
+	int getFullPrice();
+	int getLeistung();
 	
 	
 };
@@ -87,25 +90,42 @@ public:
 	Wasserkraftwerk(int x1, int x2, int y1, int y2);
 };
 
-// Capycity
-class Capycity {
+//------------------------------------------------Blueprint------------------------------------------------------------
+
+class Blueprint {
 public:
 	int area_width, area_length;
+	float kennzahl;
 	vector<Building> buildingList;
 	// Konstruktor:
-	Capycity();
-	Capycity(int area_l, int area_w);
+	Blueprint();
+	Blueprint(int area_l, int area_w);
 	// Funktionen:
 	bool collision(Building** bluepr, int pos_x, int pos_y, int building_width, int building_length);
 	void setBuilding(Building** bluepr);
 	void deleteArea(Building** bluepr);
 	void print_blueprint(Building** bluepr);
-	void endProgram();
 	// Getter und Setter:
 	int getAreaLength();
 	int getAreaWidth();
+	float getKennzahl();
+	void setKennzahl();
 	void setAreaLength(int length);
 	void setAreaWidth(int width);
+	//Funktor
+	bool operator () (Blueprint& b1, Blueprint& b2) const;
 	void reduceBuildingList(int x1, int x2, int y1, int y2);
 	vector<Building> updateBuildingList(Building** bluepr, vector<Building>& list);
 };
+
+//----------------------------------------------------------- CapycitySim-----------------------------------------------------------------------
+class CapycitySim {
+public:
+	vector<Blueprint> blueprints;
+	// Konstruktor:
+	CapycitySim();
+	CapycitySim(int area_l, int area_w);
+	void endProgram();
+	void menu();
+};
+

@@ -3,42 +3,63 @@
 using namespace std;
 
 
-//-------------------------------------Capycity---------------------------------------------------------
+//-------------------------------------CapycitySim---------------------------------------------------------
 
-Capycity::Capycity() {
+CapycitySim::CapycitySim() {
+    vector<Building> buildingList = {};
+}
+
+CapycitySim::CapycitySim(int area_l, int area_w) {
+    vector<Building> buildingList = {};
+}
+// Programm beenden
+void CapycitySim::endProgram() {
+    cout << "Programm wird beendet...";
+    exit(0);
+}
+void CapycitySim::menu() {
+
+}
+
+
+
+//-----------------------------------------------Blueprint----------------------------------------------------------------------
+Blueprint::Blueprint() {
+    kennzahl = 0;
     area_length = 0;
     area_width = 0;
     vector<Building> buildingList = {};
 }
 
-Capycity::Capycity(int area_l, int area_w) {
+Blueprint::Blueprint(int area_l, int area_w) {
+    kennzahl = 0;
     area_length = area_l;
     area_width = area_w;
     vector<Building> buildingList = {};
 }
 // Pruefung ob Teile eines zu bauenden Gebäudes mit anderen Gebäuden kollidiert oder außerhalb des Baubereichs liegt
-bool Capycity::collision(Building** obj_blueprint, int pos_x, int pos_y, int building_width, int building_length) {
+bool Blueprint::collision(Building** obj_blueprint, int pos_x, int pos_y, int building_width, int building_length) {
 
 
-    // Pruefung, ob Building innerhalb der Baufläche
-    if (((pos_x + building_length) >= area_length) || ((pos_y + building_width) >= area_width)) {
-        cout << "Gebaeude ausserhalb des Baubereichs! ";
-        return true;
-    }
-    // Pruefung, ob benoetigte Felder bereits besetzt sind
-    for (int i = pos_y; i < (pos_y + building_width); i++) {
-        for (int j = pos_x; j < (pos_x + building_length); j++) {
-            if (obj_blueprint[i][j].label != "Leer") {
-                cout << "Gebaeude kollidiert mit anderem Gebaeude! ";
-                return true;
+        // Pruefung, ob Building innerhalb der Baufläche
+        if (((pos_x + building_length) >= area_length) || ((pos_y + building_width) >= area_width)) {
+            cout << "Gebaeude ausserhalb des Baubereichs! ";
+            return true;
+        }
+        // Pruefung, ob benoetigte Felder bereits besetzt sind
+        for (int i = pos_y; i < (pos_y + building_width); i++) {
+            for (int j = pos_x; j < (pos_x + building_length); j++) {
+                if (obj_blueprint[i][j].label != "Leer") {
+                    cout << "Gebaeude kollidiert mit anderem Gebaeude! ";
+                    return true;
+                }
             }
         }
+        return false;
     }
-    return false;
-}
 
 // Gebaeude setzen
-void Capycity::setBuilding(Building** obj_blueprint) {
+void Blueprint::setBuilding(Building** obj_blueprint) {
     // Lokale 
     int building_width, building_length, pos_x, pos_y;
     bool done = false;
@@ -46,67 +67,71 @@ void Capycity::setBuilding(Building** obj_blueprint) {
 
     // Userabfrage mit Exceptions
     while (!done) {
-        try {
-            cout << "Windkraftwerk (1), Wasserkraftwerk (2) oder Solarpanele (3) bauen?" << endl;
-            cin >> b_type;
-            if (!((b_type == 1) || (b_type == 2) || (b_type == 3)))
-                throw "Ungueltiger Gebaeudetyp!";
-            cout << "Laenge: ";
-            cin >> building_length;
-            if (building_length <= 0)
-                throw "Ungueltige Gebaeudelaenge!";
-            cout << "Breite: ";
-            cin >> building_width;
-            if (building_width <= 0)
-                throw "Ungueltige Gebaeudebreite!";
+    try {
+        cout << "Windkraftwerk (1), Wasserkraftwerk (2) oder Solarpanele (3) bauen?" << endl;
+        cin >> b_type;
+        if (!((b_type == 1) || (b_type == 2) || (b_type == 3)))
+            throw "Ungueltiger Gebaeudetyp!";
+        cout << "Laenge: ";
+        cin >> building_length;
+        if (building_length <= 0)
+            throw "Ungueltige Gebaeudelaenge!";
+        cout << "Breite: ";
+        cin >> building_width;
+        if (building_width <= 0)
+            throw "Ungueltige Gebaeudebreite!";
 
-            cout << "Position der linken oberen Ecke (x y): ";
-            cin >> pos_x >> pos_y;
-            if ((pos_x < 0) || (pos_y < 0))
-                throw "Ungueltige Position! ";
-            // wenn keine fehler, dann fertig mit while schleife und user abfrage
-            done = true;
-            // user eingaben als flaeche für das gebaeude setzen
-        }
-        catch (const char* txtException) {
-            cout << "\nError: " << txtException << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
-    }
-
-    // Gebaeude einfügen
-    if (!collision(obj_blueprint, pos_x, pos_y, building_width, building_length)) {
-        for (int i = pos_y; i < (pos_y + building_width); i++) {
-            for (int j = pos_x; j < (pos_x + building_length); j++) {
-                switch (b_type) {
-                case 1:
-                    obj_blueprint[i][j] = Windkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1);
-                    break;
-                case 2:
-                    obj_blueprint[i][j] = Wasserkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1);
-                    break;
-                case 3:
-                    obj_blueprint[i][j] = Solarpanele(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1);
-                    break;
-                }
+        cout << "Position der linken oberen Ecke (x y): ";
+        cin >> pos_x >> pos_y;
+        if ((pos_x < 0) || (pos_y < 0))
+            throw "Ungueltige Position! ";
+        // wenn keine fehler, dann fertig mit while schleife und user abfrage
+        done = true;
+        // user eingaben als flaeche für das gebaeude setzen
+        }catch (const char* txtException) {
+                cout << "\nError: " << txtException << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
         }
-        // Gebaeude der buildingList hinzufuegen
-        if(b_type == 1)
-            buildingList.push_back(Windkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1));
-        if(b_type == 2)
-            buildingList.push_back(Wasserkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1));
-        if(b_type == 3)
-            buildingList.push_back(Solarpanele(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1));
-}
+
+
+        // Gebaeude einfügen
+        if (!collision(obj_blueprint, pos_x, pos_y, building_width, building_length)) {
+            for (int i = pos_y; i < (pos_y + building_width); i++) {
+                for (int j = pos_x; j < (pos_x + building_length); j++) {
+                    switch (b_type) {
+                    case 1:
+                        obj_blueprint[i][j] = Windkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1);
+                        break;
+                    case 2:
+                        obj_blueprint[i][j] = Wasserkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1);
+                        break;
+                    case 3:
+                        obj_blueprint[i][j] = Solarpanele(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1);
+                        break;
+                    }
+                }
+            }
+            // Gebaeude der buildingList hinzufuegen
+            if (b_type == 1)
+                buildingList.push_back(Windkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1));
+            if (b_type == 2)
+                buildingList.push_back(Wasserkraftwerk(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1));
+            if (b_type == 3)
+                buildingList.push_back(Solarpanele(pos_x, (pos_x + building_length) - 1, pos_y, (pos_y + building_width) - 1));
+
+            // Kennzahl des Bauplans aktualisieren
+            setKennzahl();
+        }
+    
     else {
         cout << "Gebaeude konnte nicht eingefuegt werden!" << endl;
     }
 
 }
 // Bauflaeche freigeben
-void Capycity::deleteArea(Building** obj_blueprint) {
+void Blueprint::deleteArea(Building** obj_blueprint) {
     int delete_x1, delete_x2, delete_y1, delete_y2, delete_length, delete_width;
     bool done = false;
     while (!done) {
@@ -125,12 +150,13 @@ void Capycity::deleteArea(Building** obj_blueprint) {
             //Berechnung der restlichen Koordinaten x2 und y2
             delete_x2 = delete_x1 + delete_length - 1;
             delete_y2 = delete_y1 + delete_width - 1;
-            //Löschen jedes angegebenen Feldes
-            int count_deletedBuildings = 0;
+            //Löschen jedes angegebenen Feldes im Building Array
+            int count_deletedWiKra = 0;
+            int count_deletedWaKra = 0;
+            int count_deletedSolar = 0;
             for (int i = delete_y1; i <= delete_y2; i++) {
                 for (int j = delete_x1; j <= delete_x2; j++) {
                     if (obj_blueprint[i][j].getLabel() != "Leer") {
-                        count_deletedBuildings += 1;
                         for (auto b : buildingList) {
                             auto& b_ref = b;
                             b.removeRessources();
@@ -139,7 +165,10 @@ void Capycity::deleteArea(Building** obj_blueprint) {
 
                     }
                 }
-            }updateBuildingList(obj_blueprint, buildingList);
+            
+            }
+            //Löschen der Fläche im Blueprint 
+            setKennzahl();
 
         }
         catch (const char* txtException) {
@@ -151,7 +180,7 @@ void Capycity::deleteArea(Building** obj_blueprint) {
 
 }
 // Ausgabe Bauplan
-void Capycity::print_blueprint(Building** obj_blueprint) {
+void Blueprint::print_blueprint(Building** obj_blueprint) {
     // Ausgabe des Bauplans
     for (int i = 0; i < area_width; i++) {
         for (int j = 0; j < area_length; j++) {
@@ -159,6 +188,10 @@ void Capycity::print_blueprint(Building** obj_blueprint) {
         }
         cout << endl;
     }
+
+    // Ausgabe der Kennzahl eines Bauplans
+    this->setKennzahl();
+    cout << "Kennzahl: " << this->getKennzahl() << endl;
 
     // Ausgabe der Gebaeudeliste
     cout << "\nListe der gebauten Gebaeude: " << endl;
@@ -176,26 +209,37 @@ void Capycity::print_blueprint(Building** obj_blueprint) {
     cout << "\nGesamtpreis aller Gebaeude: " << result << endl;
 }
 // Programm beenden
-void Capycity::endProgram() {
-    cout << "Programm wird beendet...";
-    exit(0);
-}
 
 // Getter
-int Capycity::getAreaLength() {
+int Blueprint::getAreaLength() {
     return area_length;
 }
-int Capycity::getAreaWidth() {
+int Blueprint::getAreaWidth() {
     return area_width;
 }
+
+float Blueprint::getKennzahl() {
+    return this->kennzahl;
+}
+
+void Blueprint::setKennzahl() {
+    int sum_leistung = 0, sum_price = 0;
+    for (auto i : this->buildingList) {
+        sum_price += i.getFullPrice();
+        sum_leistung += i.getLeistung();
+    }
+    if(!this->buildingList.empty())
+        this->kennzahl = (sum_leistung / (sum_price * (static_cast<float> (this->area_length * this->area_width))));
+}
+
 // Setter
-void Capycity::setAreaLength(int length) {
+void Blueprint::setAreaLength(int length) {
     area_length = length;
 }
-void Capycity::setAreaWidth(int width) {
+void Blueprint::setAreaWidth(int width) {
     area_width = width;
 }
-void Capycity::reduceBuildingList(int x1, int x2, int y1, int y2) {
+void Blueprint::reduceBuildingList(int x1, int x2, int y1, int y2) {
     // Fall 1: Zu löschender Bereich umfasst gesamtes Gebaeude
     int index = 0;
     for (auto i : buildingList) {
@@ -207,15 +251,10 @@ void Capycity::reduceBuildingList(int x1, int x2, int y1, int y2) {
     }
 
 }
-vector<Building> Capycity::updateBuildingList(Building** blueprint, vector<Building>& buildingList) {
-    buildingList.clear();
-       
-    for(int i = 0; i < area_length-1; i++)
-        for (int j = 0; j < area_width-1; j++) {
-            if((blueprint[i][j].getLabel() != blueprint[i+1][j].getLabel()) && (blueprint[i][j].getLabel() != blueprint[i][j+1].getLabel()) && blueprint[i][j].getLabel() != "Leer")
-                buildingList.push_back(blueprint[i][j]);
-        }
-    return buildingList;
+
+//Funktor
+bool Blueprint::operator () (Blueprint& b1, Blueprint& b2) const {
+    return b1.getKennzahl() == b2.getKennzahl();
 }
 
 
@@ -272,12 +311,14 @@ Solarpanele::Solarpanele() {
     label = "Solar";
     baseprice = 1000;
     priceOfRessources = 0;
+    this->leistung = 200;
     this->flaeche.setFlaeche(0, 0, 0, 0);
 
 }
 Windkraftwerk::Windkraftwerk() {
     label = "WiKra";
     baseprice = 1500;
+    this->leistung = 300;
     this->flaeche.setFlaeche(0, 0, 0, 0);
     priceOfRessources = 0;
 
@@ -285,6 +326,7 @@ Windkraftwerk::Windkraftwerk() {
 Wasserkraftwerk::Wasserkraftwerk() {
     label = "WaKra";
     baseprice = 2000;
+    this->leistung = 500;
     this->flaeche.setFlaeche(0, 0, 0, 0);
     priceOfRessources = 0;
 
@@ -299,8 +341,9 @@ Building::Building(int x1, int x2, int y1, int y2) {
 Solarpanele::Solarpanele(int x1, int x2, int y1, int y2) {
     label = "Solar";
     baseprice = 1000;
-    this->flaeche.setFlaeche(x1, x2, y1, y2);
+    flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
+    leistung = 200 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_wood = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_met = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_pla = 3 * (this->flaeche.getLength() * this->flaeche.getWidth());
@@ -317,6 +360,7 @@ Windkraftwerk::Windkraftwerk(int x1, int x2, int y1, int y2) {
     baseprice = 1500;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
+    this->leistung = 300 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_wood = 3 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_met = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_pla = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
@@ -331,6 +375,7 @@ Wasserkraftwerk::Wasserkraftwerk(int x1, int x2, int y1, int y2) {
     baseprice = 2000;
     this->flaeche.setFlaeche(x1, x2, y1, y2);
     priceOfRessources = 0;
+    this->leistung = 500 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_wood = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_met = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
     req_pla = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
@@ -382,8 +427,14 @@ void Building::removeRessources() {
     for (auto i = material.begin(); i != material.end(); i++)
         priceOfRessources += i->first.price * i->second;
 
-    
-
+}
+// Vollen Preis eines Gebaeudes zurückgeben
+int Building::getFullPrice() {
+    return this->baseprice + this->priceOfRessources;
+}
+// Leistung zurückgeben
+int Building::getLeistung() {
+    return this->leistung;
 }
 
 //--------------------------------------------------------Flaeche----------------------------------------

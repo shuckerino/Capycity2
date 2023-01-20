@@ -6,7 +6,8 @@ using namespace std;
 // main
 int main() {
 
-    Capycity city = Capycity();
+    CapycitySim city = CapycitySim();
+    Blueprint blueprint = Blueprint();
     bool done = false;
     int area_length, area_width;
     cout << "Willkommen bei Capycity. Erstelle einen neuen Bauplan: \n" << endl;
@@ -24,8 +25,8 @@ int main() {
                 throw "Keine gueltige Breite";
             done = true;
             // Setzen der Parameter
-            city.setAreaLength(area_length);
-            city.setAreaWidth(area_width);
+            blueprint.setAreaLength(area_length);
+            blueprint.setAreaWidth(area_width);
 
         }
         catch (const char* txtMsg) {
@@ -37,14 +38,14 @@ int main() {
     }
 
     // 2D Gebaeudearray
-    Building** obj_blueprint = new Building * [city.getAreaWidth()];
-    for (int i = 0; i < city.getAreaWidth(); i++) {
-        obj_blueprint[i] = new Building[city.getAreaLength()];
+    Building** obj_blueprint = new Building * [blueprint.getAreaWidth()];
+    for (int i = 0; i < blueprint.getAreaWidth(); i++) {
+        obj_blueprint[i] = new Building[blueprint.getAreaLength()];
     }
 
     // Initialisierung des 2D- Arrays mit freien Plätzen (0)
-    for (int i = 0; i < city.getAreaWidth(); i++) {
-        for (int j = 0; j < city.getAreaLength(); j++) {
+    for (int i = 0; i < blueprint.getAreaWidth(); i++) {
+        for (int j = 0; j < blueprint.getAreaLength(); j++) {
             obj_blueprint[i][j].label;
         }
 
@@ -61,15 +62,15 @@ int main() {
 
             switch (input) {
             case 1: // Gebaeude setzen
-                city.setBuilding(obj_blueprint);
+                blueprint.setBuilding(obj_blueprint);
                 wrong_input = false;
                 break;
             case 2: // Bereich loeschen
-                city.deleteArea(obj_blueprint);
+                blueprint.deleteArea(obj_blueprint);
                 wrong_input = false;
                 break;
             case 3: // Bauplan ausgeben
-                city.print_blueprint(obj_blueprint);
+                blueprint.print_blueprint(obj_blueprint);
                 wrong_input = false;
                 break;
             case 4: // Programm beenden
@@ -82,7 +83,7 @@ int main() {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
             }
         }
-    }
-    return 0;
+    }    return 0;
 }
+
 
