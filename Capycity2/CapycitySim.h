@@ -44,6 +44,7 @@ public:
 	int area_sum;
 	Flaeche();
 	void setFlaeche(int x1, int x2, int y1, int y2);
+	void setFlaeche(int length, int width);
 	int getLength();
 	int getWidth();
 
@@ -95,7 +96,7 @@ public:
 class Blueprint {
 public:
 	int area_width, area_length;
-	float kennzahl;
+	double kennzahl;
 	vector<Building> buildingList;
 	Building** obj_blueprint;
 	// Konstruktor:
@@ -109,7 +110,7 @@ public:
 	// Getter und Setter:
 	int getAreaLength();
 	int getAreaWidth();
-	float getKennzahl();
+	double getKennzahl();
 	void setKennzahl();
 	void setAreaLength(int length);
 	void setAreaWidth(int width);
@@ -125,7 +126,6 @@ public:
 	vector<Blueprint> blueprint_list;
 	// Konstruktor:
 	CapycitySim();
-	CapycitySim(int area_l, int area_w);
 	void menu(CapycitySim& sim);
 	void endProgram();
 	Blueprint create_blueprint();

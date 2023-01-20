@@ -1,5 +1,6 @@
 #include <iostream>
 #include "CapycitySim.h"
+#include <algorithm>
 using namespace std;
 
 
@@ -9,9 +10,6 @@ CapycitySim::CapycitySim() {
     vector<Blueprint> blueprint_list = {};
 }
 
-CapycitySim::CapycitySim(int area_l, int area_w) {
-    vector<Blueprint> blueprint_list = {};
-}
 // Programm beenden
 void CapycitySim::endProgram() {
     cout << "Programm wird beendet...";
@@ -21,12 +19,14 @@ void CapycitySim::endProgram() {
 
 void CapycitySim::save(Blueprint& blueprint) {
     // überprüfen auf Gleichheit von Plänen
+    bool needs_save = true;
     for (auto i : blueprint_list) {
         if (blueprint(i)) { // Aufrufen des Funktors 
-            blueprint_list.push_back(blueprint);
+            needs_save = false;
         }
-
     }
+    if(needs_save)
+        blueprint_list.push_back(blueprint);
     // wenn noch keine Baupläne gespeichert, dann auf jeden Fall speichern
     if (blueprint_list.empty()) {
         blueprint_list.push_back(blueprint);
@@ -89,7 +89,10 @@ void CapycitySim::menu(CapycitySim& sim) {
 
 void CapycitySim::print_all_blueprints() {
     
-    //auto lambda = [] () -> 
+    sort(blueprint_list.begin(),
+        blueprint_list.end(),
+        [](Blueprint bp, Blueprint bp2)
+        {return (bp.getKennzahl() > bp2.getKennzahl()); });
     for (auto i : this->blueprint_list) {
         i.print_blueprint(i.obj_blueprint);
 
@@ -189,7 +192,7 @@ bool Blueprint::collision(Building** object_bluepr, int pos_x, int pos_y, int bu
     }
 
 // Gebaeude setzen
-void Blueprint::setBuilding(Building** object_bluepr) {
+void Blueprint::setBuilding(Building** object_blueprint) {
     // Lokale 
     int building_width, building_length, pos_x, pos_y;
     bool done = false;
@@ -261,7 +264,7 @@ void Blueprint::setBuilding(Building** object_bluepr) {
 
 }
 // Bauflaeche freigeben
-void Blueprint::deleteArea(Building** object_bluepr) {
+void Blueprint::deleteArea(Building** object_blueprint) {
     int delete_x1, delete_x2, delete_y1, delete_y2, delete_length, delete_width;
     bool done = false;
     while (!done) {
@@ -289,10 +292,13 @@ void Blueprint::deleteArea(Building** object_bluepr) {
             for (int i = delete_y1; i <= delete_y2; i++) {
                 for (int j = delete_x1; j <= delete_x2; j++) {
                     if (obj_blueprint[i][j].getLabel() != "Leer") {
-                        for (auto b : buildingList) {
-                            auto& b_ref = b;
-                            b.removeRessources();
-                        }
+                        if (obj_blueprint[i][j].getLabel() != "WiKra")
+                            obj_blueprint[i][j].removeRessources();
+                        if (obj_blueprint[i][j].getLabel() != "WaKra")
+                            obj_blueprint[i][j].removeRessources();
+                        if (obj_blueprint[i][j].getLabel() != "Solar")
+                            obj_blueprint[i][j].removeRessources();
+
                         obj_blueprint[i][j].deleteBuilding();
 
                     }
@@ -350,7 +356,7 @@ int Blueprint::getAreaWidth() {
     return area_width;
 }
 
-float Blueprint::getKennzahl() {
+double Blueprint::getKennzahl() {
     return this->kennzahl;
 }
 // Setter
@@ -363,7 +369,7 @@ void Blueprint::setKennzahl() {
     if (this->buildingList.empty())
         this->kennzahl = 0;
     else
-        this->kennzahl = (sum_leistung / (sum_price * (static_cast<float> (this->area_length * this->area_width))));
+        this->kennzahl = (sum_leistung / (sum_price * (static_cast<double> (this->area_length * this->area_width))));
 }
 void Blueprint::setAreaLength(int length) {
     area_length = length;
@@ -386,11 +392,11 @@ void Blueprint::reduceBuildingList(int x1, int x2, int y1, int y2) {
 
 }
 
-//Funktor, Rückgabewert true wenn Bauplan gespeichert werden soll
+//Funktor, Rückgabewert true falls der zu speichernde Plan mit einem bereits gespeichertem übereinstimmt
 bool Blueprint::operator () (Blueprint& b1)  {
     if ((b1.getKennzahl() == getKennzahl()) && (b1.getAreaLength() == getAreaLength()) && (b1.getAreaWidth() == getAreaWidth()))
-        return false;
-    return true;
+        return true;
+    return false;
 }
 
 
@@ -553,10 +559,13 @@ void Building::deleteBuilding() {
     baseprice = 0;
 }
 void Building::removeRessources() {
+
+    int new_length = this->flaeche.getLength() - 1;
     this->material.clear();
-    req_wood = 2 * (this->flaeche.getLength() * this->flaeche.getWidth());
-    req_met = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
-    req_pla = 1 * (this->flaeche.getLength() * this->flaeche.getWidth());
+    this->flaeche.setFlaeche(new_length, this->flaeche.getWidth());
+    req_wood = req_wood * (new_length * this->flaeche.getWidth());
+    req_met = req_met * (new_length) * this->flaeche.getWidth();
+    req_pla = req_pla * (new_length) * this->flaeche.getWidth();
     material.insert(make_pair(Holz(), req_wood));
     material.insert(make_pair(Metall(), req_met));
     material.insert(make_pair(Kunststoff(), req_pla));
@@ -586,6 +595,15 @@ Flaeche::Flaeche() {
 }
 
 void Flaeche::setFlaeche(int x1, int x2, int y1, int y2) {
+    this->x1 = x1;
+    this->x2 = x2;
+    this->y1 = y1;
+    this->y2 = y2;
+    this->length = x2 - x1 + 1;
+    this->width = y2 - y1 + 1;
+    this->area_sum = width * length;
+}
+void Flaeche::setFlaeche(int length, int width) {
     this->x1 = x1;
     this->x2 = x2;
     this->y1 = y1;
