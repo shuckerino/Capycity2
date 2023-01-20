@@ -89,12 +89,18 @@ void CapycitySim::menu(CapycitySim& sim) {
 
 void CapycitySim::print_all_blueprints() {
     
+    // Lambda Funktion, um Bauplaene absteigend nach der Kennzahl zu sortieren
     sort(blueprint_list.begin(),
         blueprint_list.end(),
         [](Blueprint bp, Blueprint bp2)
         {return (bp.getKennzahl() > bp2.getKennzahl()); });
+
+    //Ausgabe der Bauplanliste
+    int index = 1;
     for (auto i : this->blueprint_list) {
+        cout << " Bauplan Nummer: " << index << endl;
         i.print_blueprint(i.obj_blueprint);
+        index++;
 
     }
         
